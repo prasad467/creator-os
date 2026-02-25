@@ -12,18 +12,22 @@ export default function VerifyEmailClient() {
 
   const accessToken = params.get("access_token");
   const email = params.get("email");
+  const errorCode = params.get("error_code"); // Supabase may send this for expired links
 
-  const [status, setStatus] = useState<"loading" | "success" | "error">(
-    !accessToken || !email ? "error" : "loading"
-  );
-  const [message, setMessage] = useState(
-    !accessToken || !email
-      ? "Invalid verification link."
-      : "Verifying your email..."
-  );
+  const [status, setStatus] = useState<"loading" | "success" | "error">(() => {
+    if (!accessToken || !email) return "error";
+    if (errorCode === "otp_expired") return "error";
+    return "loading";
+  });
+  const [message, setMessage] = useState(() => {
+    if (!accessToken || !email) return "Invalid verification link.";
+    if (errorCode === "otp_expired")
+      return "This verification link has expired. Request a new one.";
+    return "Verifying your email...";
+  });
 
   useEffect(() => {
-    if (!accessToken || !email) return;
+    if (!accessToken || !email || errorCode === "otp_expired") return;
 
     const verifyEmail = async () => {
       try {
@@ -47,10 +51,11 @@ export default function VerifyEmailClient() {
     };
 
     verifyEmail();
-  }, [accessToken, email]);
+  }, [accessToken, email, errorCode]);
 
   const renderIcon = () => {
     if (status === "loading") return null;
+
     const iconProps = { className: "w-20 h-20 mx-auto" };
     return (
       <motion.div
@@ -64,6 +69,13 @@ export default function VerifyEmailClient() {
         )}
       </motion.div>
     );
+  };
+
+  const resendVerification = async () => {
+    if (!email) return;
+    const { error } = await supabase.auth.resend({ email, type: "signup" });
+    if (!error) alert("Verification email resent!");
+    else alert("Failed to resend: " + error.message);
   };
 
   return (
@@ -95,6 +107,18 @@ export default function VerifyEmailClient() {
           >
             <p className="text-zinc-400">Verifying your email...</p>
           </motion.div>
+        )}
+
+        {/* Show resend button if link expired */}
+        {errorCode === "otp_expired" && email && (
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={resendVerification}
+            className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold transition"
+          >
+            Resend Verification Email
+          </motion.button>
         )}
 
         {status === "success" && (
