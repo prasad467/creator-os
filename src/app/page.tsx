@@ -100,19 +100,18 @@ export default function Home() {
   setResult(null);
 
   try {
-    const res = await fetch("/api/analyze", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ niche, platform, keywords }),
-    });
+    const res = await fetch('/api/analyze', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ niche, platform, keywords }),
+});
 
-    const data = await res.json();
-    setResult(data.result);
+const data = await res.json();
+setResult(data.result);
   } catch (error) {
-    setResult("Something went wrong.");
-  }
+  console.error("Error fetching AI result:", error);
+  setResult("Something went wrong.");
+}
 
   setLoading(false);
 }}
