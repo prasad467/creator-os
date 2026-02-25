@@ -3,7 +3,18 @@ export async function POST(req: Request) {
     const { niche, platform, keywords } = await req.json();
 
     // Build your prompt
-    const prompt = `Analyze content gaps for niche: ${niche}, platform: ${platform}, keywords: ${keywords}`;
+    const prompt = `
+You are an expert content analyst. 
+Analyze content for niche: "${niche}" on platform: "${platform}" with keywords: "${keywords}". 
+Provide a concise, structured analysis for a content creator. Focus on:
+
+1. Top competitor accounts
+2. Content types that get the most attention
+3. Engagement strategies
+4. Gaps where new content can perform well
+
+Output in a **bullet-point format**, short sentences, easy to read.
+`;
 
     const payload = {
       contents: [
@@ -38,7 +49,18 @@ export async function POST(req: Request) {
       data?.candidates?.[0]?.content?.parts?.[0]?.text ||
       'No response from AI.';
 
-    return Response.json({ result: output });
+      
+
+// Remove unnecessary symbols/extra newlines
+const cleanedOutput = output.replace(/[*#]/g, "").trim();
+
+// Limit to first 500 characters (optional)
+// const shortOutput = cleanedOutput.length > 500 ? cleanedOutput.slice(0, 500) + "..." : cleanedOutput;
+
+return Response.json({ result: cleanedOutput });
+
+
+    // return Response.json({ result: output });
   } catch (error: unknown) {
     console.error('Error in /api/analyze:', error);
 

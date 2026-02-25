@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 export default function Home() {
   const [showAnalyzer, setShowAnalyzer] = useState(false);
@@ -123,23 +124,71 @@ setResult(data.result);
               </div>
 
               {/* Result Preview Section */}
-              <div>
-                {loading ? (
-                  <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 flex items-center justify-center h-96">
-                    <p className="text-zinc-400">Analyzing with AI...</p>
-                  </div>
-                ) : result ? (
-                  <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 whitespace-pre-wrap">
-                    {result}
-                  </div>
-                ) : (
-                  <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 flex items-center justify-center h-96">
-                    <p className="text-zinc-500">
-                      Enter your niche details and click Analyze to see AI insights
-                    </p>
-                  </div>
-                )}
-              </div>
+              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 h-96 overflow-y-auto relative">
+{loading ? (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.8 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ duration: 0.6 }}
+    className="bg-gradient-to-br from-purple-900 via-black to-purple-800 border border-purple-700 rounded-2xl p-8 flex flex-col items-center justify-center h-96 relative overflow-hidden"
+  >
+    {/* Pulsating AI Text */}
+    <motion.p
+      initial={{ y: -10, opacity: 0 }}
+      animate={{ y: [0, -10, 0], opacity: [0.5, 1, 0.5] }}
+      transition={{ repeat: Infinity, duration: 1.2, ease: "easeInOut" }}
+      className="text-white text-lg font-bold text-center"
+    >
+      Analyzing your niche... AI magic in progress ✨
+    </motion.p>
+
+    {/* Bouncing dots */}
+    <div className="flex mt-6 space-x-3">
+      {[0, 1, 2].map((i) => (
+        <motion.span
+          key={i}
+          animate={{ y: [0, -15, 0], scale: [1, 1.3, 1] }}
+          transition={{
+            repeat: Infinity,
+            delay: i * 0.2,
+            duration: 0.6,
+            ease: "easeInOut",
+          }}
+          className="w-4 h-4 bg-pink-500 rounded-full shadow-lg"
+        />
+      ))}
+    </div>
+
+    {/* Animated rotating neon border */}
+    <motion.div
+      className="absolute inset-0 rounded-2xl border-4 border-transparent border-t-pink-500 border-b-purple-500 pointer-events-none"
+      animate={{ rotate: 360 }}
+      transition={{ repeat: Infinity, duration: 10, ease: "linear" }}
+    />
+  </motion.div>
+) : (
+  /* Your result box */
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ duration: 0.6 }}
+    className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 whitespace-pre-wrap min-h-[24rem]"
+  >
+    {result}
+  </motion.div>
+)}
+  {result && (
+    <>
+      <pre className="whitespace-pre-wrap font-mono text-zinc-200">{result}</pre>
+      <button
+        onClick={() => navigator.clipboard.writeText(result)}
+        className="absolute top-4 right-4 bg-zinc-700 hover:bg-zinc-600 text-sm px-3 py-1 rounded-md transition"
+      >
+        Copy
+      </button>
+    </>
+  )}
+</div>
             </div>
 
             <button
