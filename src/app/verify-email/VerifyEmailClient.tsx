@@ -1,4 +1,4 @@
-"use client"; // MUST be here!
+"use client";
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
