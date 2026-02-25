@@ -7,7 +7,8 @@ export default function Home() {
   const [niche, setNiche] = useState("");
   const [platform, setPlatform] = useState("YouTube");
   const [keywords, setKeywords] = useState("");
-  const [result, setResult] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleGetStarted = () => {
     setShowAnalyzer(true);
@@ -92,11 +93,29 @@ export default function Home() {
                 </div>
 
                 <button
-                  onClick={() => {
-                    if (niche.trim()) {
-                      setResult(true);
-                    }
-                  }}
+                 onClick={async () => {
+  if (!niche.trim()) return;
+
+  setLoading(true);
+  setResult(null);
+
+  try {
+    const res = await fetch("/api/analyze", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ niche, platform, keywords }),
+    });
+
+    const data = await res.json();
+    setResult(data.result);
+  } catch (error) {
+    setResult("Something went wrong.");
+  }
+
+  setLoading(false);
+}}
                   disabled={!niche.trim()}
                   className="w-full px-6 py-3 bg-white text-black font-semibold rounded-lg hover:bg-zinc-100 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed mt-8"
                 >
@@ -106,60 +125,18 @@ export default function Home() {
 
               {/* Result Preview Section */}
               <div>
-                {result ? (
-                  <div className="space-y-4">
-                    <div className="bg-linear-to-br from-zinc-900 to-zinc-950 border border-zinc-800 rounded-xl p-6 space-y-6">
-                      <div>
-                        <p className="text-sm text-zinc-500 mb-2">Analyzed Niche</p>
-                        <p className="text-lg font-semibold text-white">{niche}</p>
-                      </div>
-
-                      <div className="border-t border-zinc-800 pt-4 space-y-4">
-                        <div>
-                          <p className="text-sm text-zinc-500 mb-2">Top Content Gaps</p>
-                          <ul className="space-y-2">
-                            <li className="flex items-center space-x-3 text-sm">
-                              <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                              <span>Tutorial content on {niche}</span>
-                            </li>
-                            <li className="flex items-center space-x-3 text-sm">
-                              <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
-                              <span>Behind-the-scenes {niche} content</span>
-                            </li>
-                            <li className="flex items-center space-x-3 text-sm">
-                              <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                              <span>Comparison videos in this niche</span>
-                            </li>
-                          </ul>
-                        </div>
-
-                        <div className="border-t border-zinc-800 pt-4">
-                          <p className="text-sm text-zinc-500 mb-2">Recommended Platform</p>
-                          <div className="flex items-center space-x-2">
-                            <span className="px-3 py-1 bg-zinc-800 rounded-full text-sm font-medium text-white">
-                              {platform}
-                            </span>
-                            <span className="text-sm text-zinc-500">Best for your niche</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => {
-                        setResult(false);
-                        setNiche("");
-                        setKeywords("");
-                      }}
-                      className="w-full px-6 py-2 border border-zinc-800 text-white rounded-lg hover:border-zinc-600 hover:bg-zinc-900 transition-colors duration-300 text-sm"
-                    >
-                      Analyze Another Niche
-                    </button>
+                {loading ? (
+                  <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 flex items-center justify-center h-96">
+                    <p className="text-zinc-400">Analyzing with AI...</p>
+                  </div>
+                ) : result ? (
+                  <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 whitespace-pre-wrap">
+                    {result}
                   </div>
                 ) : (
-                  <div className="bg-linear-to-br from-zinc-900 to-zinc-950 border border-zinc-800 rounded-xl p-8 flex items-center justify-center h-96">
-                    <p className="text-center text-zinc-500">
-                      Enter your niche details and click Analyze to see content gap insights
+                  <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 flex items-center justify-center h-96">
+                    <p className="text-zinc-500">
+                      Enter your niche details and click Analyze to see AI insights
                     </p>
                   </div>
                 )}
@@ -169,7 +146,7 @@ export default function Home() {
             <button
               onClick={() => {
                 setShowAnalyzer(false);
-                setResult(false);
+                setResult(null);
                 setNiche("");
                 setKeywords("");
               }}
