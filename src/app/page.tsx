@@ -22,7 +22,7 @@ export default function Home() {
         <section className="h-screen flex items-center justify-center px-6 py-20">
           <div className="max-w-2xl text-center space-y-8">
             <div>
-              <h1 className="text-6xl md:text-7xl font-bold mb-6 leading-tight">
+                <h1 className="text-6xl md:text-7xl font-bold mb-6 leading-tight">
                 Find Content Gaps
                 <span className="text-transparent bg-clip-text bg-linear-to-r from-blue-500 to-purple-500">
                   {" "}instantly
@@ -130,7 +130,7 @@ setResult(data.result);
     initial={{ opacity: 0, scale: 0.8 }}
     animate={{ opacity: 1, scale: 1 }}
     transition={{ duration: 0.6 }}
-    className="bg-gradient-to-br from-purple-900 via-black to-purple-800 border border-purple-700 rounded-2xl p-8 flex flex-col items-center justify-center h-96 relative overflow-hidden"
+    className="bg-linear-to-br from-purple-900 via-black to-purple-800 border border-purple-700 rounded-2xl p-8 flex flex-col items-center justify-center h-96 relative overflow-hidden"
   >
     {/* Pulsating AI Text */}
     <motion.p
@@ -172,7 +172,7 @@ setResult(data.result);
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     transition={{ duration: 0.6 }}
-    className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 whitespace-pre-wrap min-h-[24rem]"
+    className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 whitespace-pre-wrap min-h-96"
   >
     {result}
   </motion.div>
