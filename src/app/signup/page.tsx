@@ -16,7 +16,16 @@ export default function SignUpPage() {
     setLoading(true);
     setMessage(null);
 
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { error } = await supabase.auth.signUp({
+  email,
+  password,
+  options: {
+    emailRedirectTo:
+      process.env.NODE_ENV === "development"
+        ? "http://localhost:3000/auth/callback"
+        : "https://creator-os-opal.vercel.app/auth/callback",
+  },
+});
 
     if (error) {
       setMessage(error.message);
