@@ -1,135 +1,75 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { CheckCircle, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
 
-export default function VerifyEmailClient() {
-  const params = useSearchParams();
+export default function VerifyEmailPage() {
   const router = useRouter();
-
-  const accessToken = params.get("access_token");
-  const email = params.get("email");
-  const errorCode = params.get("error_code"); // Supabase may send this for expired links
-
-  const [status, setStatus] = useState<"loading" | "success" | "error">(() => {
-    if (!accessToken || !email) return "error";
-    if (errorCode === "otp_expired") return "error";
-    return "loading";
-  });
-  const [message, setMessage] = useState(() => {
-    if (!accessToken || !email) return "Invalid verification link.";
-    if (errorCode === "otp_expired")
-      return "This verification link has expired. Request a new one.";
-    return "Verifying your email...";
-  });
+  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
 
   useEffect(() => {
-    if (!accessToken || !email || errorCode === "otp_expired") return;
+    const checkUser = async () => {
+      const { data } = await supabase.auth.getUser();
 
-    const verifyEmail = async () => {
-      try {
-        const { error } = await supabase.auth.verifyOtp({
-          token: accessToken,
-          email,
-          type: "signup",
-        });
-
-        if (error) {
-          setStatus("error");
-          setMessage("Verification failed: " + error.message);
-        } else {
-          setStatus("success");
-          setMessage("Your email has been successfully verified!");
-        }
-      } catch {
+      if (data.user) {
+        setStatus("success");
+        setTimeout(() => router.push("/login"), 2500);
+      } else {
         setStatus("error");
-        setMessage("Something went wrong. Please try again.");
       }
     };
 
-    verifyEmail();
-  }, [accessToken, email, errorCode]);
+    checkUser();
+  }, [router]);
 
-  const renderIcon = () => {
-    if (status === "loading") return null;
-
-    const iconProps = { className: "w-20 h-20 mx-auto" };
-    return (
-      <motion.div
-        animate={{ y: [0, -15, 0], rotate: [0, 15, -15, 0] }}
-        transition={{ repeat: Infinity, duration: 1.5 }}
-      >
-        {status === "success" ? (
-          <CheckCircle {...iconProps} className="text-green-500" />
-        ) : (
-          <XCircle {...iconProps} className="text-red-500" />
-        )}
-      </motion.div>
-    );
-  };
-
-  const resendVerification = async () => {
-    if (!email) return;
-    const { error } = await supabase.auth.resend({ email, type: "signup" });
-    if (!error) alert("Verification email resent!");
-    else alert("Failed to resend: " + error.message);
-  };
+  const content = {
+    loading: {
+      icon: <Loader2 className="w-14 h-14 animate-spin text-zinc-400" />,
+      title: "Verifying your email...",
+      description: "Please wait while we confirm your account.",
+    },
+    success: {
+      icon: <CheckCircle2 className="w-14 h-14 text-green-500" />,
+      title: "Email verified successfully",
+      description: "Redirecting you to login...",
+    },
+    error: {
+      icon: <XCircle className="w-14 h-14 text-red-500" />,
+      title: "Invalid or expired link",
+      description: "Please request a new verification email.",
+    },
+  }[status];
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black text-white px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-zinc-950 to-black text-white px-4">
       <motion.div
-        initial={{ opacity: 0, y: 50, scale: 0.9 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="bg-zinc-900 p-8 rounded-2xl max-w-md text-center space-y-6 shadow-2xl"
+        className="w-full max-w-md bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 rounded-2xl p-10 text-center shadow-2xl"
       >
-        {renderIcon()}
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className={`text-lg font-semibold ${
-            status === "success" ? "text-green-400" : "text-red-400"
-          }`}
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.4 }}
+          className="flex justify-center mb-6"
         >
-          {message}
-        </motion.p>
+          {content.icon}
+        </motion.div>
 
-        {status === "loading" && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0.3, 1, 0.3] }}
-            transition={{ repeat: Infinity, duration: 1 }}
-          >
-            <p className="text-zinc-400">Verifying your email...</p>
-          </motion.div>
-        )}
+        <h1 className="text-xl font-semibold mb-2">{content.title}</h1>
+        <p className="text-zinc-400 text-sm">{content.description}</p>
 
-        {/* Show resend button if link expired */}
-        {errorCode === "otp_expired" && email && (
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={resendVerification}
-            className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold transition"
+        {status === "error" && (
+          <button
+            onClick={() => router.push("/signup")}
+            className="mt-6 w-full bg-white text-black font-medium py-2.5 rounded-lg hover:opacity-90 transition"
           >
-            Resend Verification Email
-          </motion.button>
-        )}
-
-        {status === "success" && (
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => router.push("/login")}
-            className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold transition"
-          >
-            Go to Login
-          </motion.button>
+            Back to Signup
+          </button>
         )}
       </motion.div>
     </div>

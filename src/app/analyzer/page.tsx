@@ -63,7 +63,7 @@ export default function AnalyzerPage() {
             AI Analyzer
           </div>
 
-          <div className="flex items-center gap-3 text-zinc-500">
+           {/* { <div className="flex items-center gap-3 text-zinc-500">
             <Sparkles size={18} />
             Hook Writer
           </div>
@@ -76,8 +76,8 @@ export default function AnalyzerPage() {
           <div className="flex items-center gap-3 text-zinc-500">
             <Rocket size={18} />
             Growth Engine
-          </div>
-        </nav>
+          </div>}  */}
+        </nav> 
 
         <div className="mt-auto text-xs text-zinc-600">
           Free Plan • 3/10 analyses left
