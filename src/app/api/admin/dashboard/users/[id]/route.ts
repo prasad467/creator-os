@@ -3,10 +3,10 @@ import { supabaseAdmin } from "@/lib/adminAuth";
 
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: userId } = await context.params;
+    const { id: userId } = await params;
 
     if (!userId) {
       return NextResponse.json(
