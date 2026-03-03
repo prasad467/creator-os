@@ -16,7 +16,7 @@ export default function SignUpPage() {
     setLoading(true);
     setMessage(null);
 
-    const { error } = await supabase.auth.signUp({
+const { data, error } = await supabase.auth.signUp({
   email,
   password,
   options: {
@@ -26,6 +26,13 @@ export default function SignUpPage() {
         : "https://creator-os-opal.vercel.app/auth/callback",
   },
 });
+
+if (data.user) {
+  await supabase.from("profiles").insert({
+    id: data.user.id,
+    full_name: "",
+  });
+}
 
     if (error) {
       setMessage(error.message);
